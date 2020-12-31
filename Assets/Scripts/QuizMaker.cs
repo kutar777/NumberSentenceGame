@@ -1,36 +1,27 @@
 ﻿using System.Linq;
 using System.Collections.Generic;
 using UnityEngine;
-using System;
 
 public class QuizMaker : MonoBehaviour
 {
+    [Header("Quiz")]
     [SerializeField] GameObject quizPrefab = null;
-    [SerializeField] List<Transform> places = new List<Transform>();
+    [SerializeField] List<Transform> quizPlaces = new List<Transform>();
 
     private List<NumberQuiz> quizzes;
+    private Addition addition = new Addition(1, 1);
 
-    [Header("Debug")]
-    [SerializeField] private int firstVal;
-    [SerializeField] private int secondVal;
+    [Header("Answer")]
+    [SerializeField] GameObject anwerPrefab = null;
+    [SerializeField] List<Transform> answerPlaces = new List<Transform>();
 
-    Addition addition = new Addition(1, 1);
+    private List<AnswerChoice> answers;
 
     void Start()
     {
         InitializeQuizList();
+        InitializeAnswerChoices();
         UpdateQuizList();
-    }
-
-    public void UpdateQuizList()
-    {
-        foreach (var quiz in quizzes)
-        {
-            int firstVal = UnityEngine.Random.Range(0, 10);
-            int secondVal = UnityEngine.Random.Range(0, 10);
-            addition = new Addition(firstVal, secondVal);
-            quiz.SetValue(addition, (EmptyNumber)UnityEngine.Random.Range(1, 4));
-        }
     }
 
     private void InitializeQuizList()
@@ -42,7 +33,7 @@ public class QuizMaker : MonoBehaviour
         }
 
         quizzes = new List<NumberQuiz>();
-        foreach (var place in places)
+        foreach (var place in quizPlaces)
         {
             var go = Instantiate<GameObject>(quizPrefab, place);
             var quiz = go.GetComponent<NumberQuiz>();
@@ -50,11 +41,43 @@ public class QuizMaker : MonoBehaviour
         }
     }
 
-    // インスペクターで値入力
-    public void UpdateNumbers()
+    private void InitializeAnswerChoices()
     {
-        //addition = new AddSentence(firstVal, secondVal);
-        //SetText(addition);
+        if(answers != null)
+        {
+            answers.Clear();
+            answers = null;
+        }
+
+        answers = new List<AnswerChoice>();
+        foreach (var place in answerPlaces)
+        {
+            var go = Instantiate<GameObject>(anwerPrefab, place);
+            var answer = go.GetComponent<AnswerChoice>();
+            if (answer != null) answers.Add(answer);
+        }
+    }
+
+    public void UpdateQuizList()
+    {
+        foreach (var quiz in quizzes)
+        {
+            int firstVal = UnityEngine.Random.Range(0, 10);
+            int secondVal = UnityEngine.Random.Range(0, 10);
+            addition = new Addition(firstVal, secondVal);
+            //quiz.SetValue(addition, (EmptyNumber)UnityEngine.Random.Range(1, 4));
+            quiz.SetValue(addition, EmptyNumber.Result);
+            UpdateAnswers(addition.Result);
+        }
+    }
+
+    private void UpdateAnswers(int result)
+    {
+        var ansWithIndex = answers.Select((ans, index) => new { index, ans });
+        foreach (var item in ansWithIndex)
+        {
+            item.ans.SetText(item.index + 1, result + item.index);
+        }
     }
 
     // ランダム値入力
