@@ -6,6 +6,7 @@ public class AnswerChoice : MonoBehaviour
     [Header("UI")]
     [SerializeField] private Text number = null;
     [SerializeField] private Text answer = null;
+    [SerializeField] private Button button = null;
 
     public void SetText(int label, int answer)
     {
